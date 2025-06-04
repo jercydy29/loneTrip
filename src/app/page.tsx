@@ -1,103 +1,182 @@
-import Image from "next/image";
+// ===== PART 1: IMPORTS (Getting Our Tools) =====
+'use client';                    // 🎯 Tells Next.js this runs in the browser
+import { useState } from 'react'; // 🧠 Tool for remembering things
+import TravelForm from '@/components/TravelForm'; // 🗂️ Our beautiful form component
 
+/*
+🤔 WHY THESE IMPORTS?
+- 'use client': Like putting a "browser only" sticker on our code
+- useState: Think of it as the app's memory - remembers form data
+- TravelForm: The sidebar component we built earlier
+*/
+
+// ===== PART 2: TYPE DEFINITION (The Rules) =====
+interface TravelFormData {
+    origin: string;        // 📍 Where they start (text)
+    destination: string;   // 🎯 Where they want to go (text)  
+    duration: number;      // 📅 How many days (number)
+    budget: number;        // 💰 How much money (number)
+}
+
+/*
+🤔 WHY THIS INTERFACE?
+Think of it like a form template that says:
+"Any travel data MUST have these 4 things, and they must be these types"
+TypeScript uses this to catch mistakes before they happen!
+*/
+
+// ===== PART 3: THE MAIN COMPONENT (The Director) =====
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+    // === PART 3A: STATE VARIABLES (The App's Memory) ===
+    const [isLoading, setIsLoading] = useState(false);
+    const [tripData, setTripData] = useState<TravelFormData | null>(null);
+
+    /*
+    🧠 WHAT IS useState?
+    Think of useState like having two things:
+    1. A box to store something (isLoading, tripData)
+    2. A way to change what's in the box (setIsLoading, setTripData)
+    
+    🎯 WHAT THESE STORE:
+    - isLoading: true/false - "Are we currently processing the trip?"
+    - tripData: Either trip information OR null (empty)
+    
+    📱 REAL-LIFE ANALOGY:
+    Like having a notepad where you write:
+    - "Currently working: Yes/No"
+    - "Trip details: [either the details or 'nothing yet']"
+    */
+
+    // === PART 3B: THE EVENT HANDLER (What Happens When Form Submits) ===
+    const handleTravelFormSubmit = async (data: TravelFormData) => {
+        console.log('🎉 Form submitted with data:', data);
+
+        // Step 1: Remember we're now loading
+        setIsLoading(true);
+        // Step 2: Save the trip data 
+        setTripData(data);
+
+        // Step 3: Simulate processing (fake API call for now)
+        try {
+            await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds
+            console.log('✅ Trip planning completed!');
+        } catch (error) {
+            console.error('❌ Error planning trip:', error);
+        } finally {
+            // Step 4: We're done loading
+            setIsLoading(false);
+        }
+    };
+
+    /*
+    🎬 WHAT HAPPENS HERE STEP-BY-STEP:
+    
+    1. User fills form and clicks "Plan My Adventure!"
+    2. This function receives the form data
+    3. We set isLoading = true (shows loading animation)
+    4. We save the data to tripData (so we can display it)
+    5. We fake an API call (2 second delay)
+    6. We set isLoading = false (hides loading animation)
+    
+    🔗 CONNECTION TO FORM:
+    We'll GIVE this function TO our TravelForm component
+    When the form is submitted, it will CALL this function
+    */
+
+    // === PART 3C: THE RENDER (What Users See) ===
+    return (
+        <div className="min-h-screen bg-gray-50 flex">
+
+            {/* LEFT SIDE: Our Travel Form */}
+            <TravelForm
+                onSubmit={handleTravelFormSubmit}  // 🔗 Give the form our function
+                isLoading={isLoading}              // 🔗 Tell form if we're loading
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+
+            {/* RIGHT SIDE: Map Area (changes based on state) */}
+            <div className="flex-1 relative">
+                <div className="h-full bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+
+                    {/* CONDITIONAL RENDERING: Show different things based on tripData */}
+                    {!tripData ? (
+
+                        // === SCENARIO 1: No trip data yet (initial state) ===
+                        <div className="text-center p-8">
+                            <div className="w-32 h-32 mx-auto mb-6 bg-blue-200 rounded-full flex items-center justify-center">
+                                <span className="text-4xl">🗺️</span>
+                            </div>
+                            <h2 className="text-2xl font-bold text-gray-700 mb-4">
+                                Ready for Your Adventure?
+                            </h2>
+                            <p className="text-gray-600 max-w-md">
+                                Fill out the form on the left to start planning your perfect trip.
+                                We'll show you the route and create a personalized itinerary!
+                            </p>
+                        </div>
+
+                    ) : (
+
+                        // === SCENARIO 2: We have trip data ===
+                        <div className="text-center p-8 max-w-2xl">
+                            <h2 className="text-3xl font-bold text-gray-800 mb-6">
+                                Your Trip is Being Planned!
+                            </h2>
+
+                            {/* Display the trip details */}
+                            <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+                                <h3 className="text-xl font-semibold mb-4 text-gray-700">
+                                    Trip Details
+                                </h3>
+                                <div className="grid grid-cols-2 gap-4 text-center">
+                                    <div>
+                                        <span className="font-medium text-gray-600">From:</span>
+                                        <p className="text-lg">{tripData.origin}</p>
+                                    </div>
+                                    <div>
+                                        <span className="font-medium text-gray-600">To:</span>
+                                        <p className="text-lg">{tripData.destination}</p>
+                                    </div>
+                                    <div>
+                                        <span className="font-medium text-gray-600">Duration:</span>
+                                        <p className="text-lg">{tripData.duration} days</p>
+                                    </div>
+                                    <div>
+                                        <span className="font-medium text-gray-600">Budget:</span>
+                                        <p className="text-lg">${tripData.budget.toLocaleString()}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Show different content based on loading state */}
+                            {isLoading ? (
+
+                                // === SUB-SCENARIO 2A: Still processing ===
+                                <div className="space-y-4">
+                                    <div className="w-16 h-16 mx-auto border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                                    <p className="text-gray-600">
+                                        Creating your personalized itinerary...
+                                    </p>
+                                </div>
+
+                            ) : (
+
+                                // === SUB-SCENARIO 2B: Processing complete ===
+                                <div className="space-y-4">
+                                    <div className="text-green-600 text-6xl mb-4"></div>
+                                    <p className="text-xl font-semibold text-gray-700">
+                                        Your itinerary is ready!
+                                    </p>
+                                    <p className="text-gray-600">
+                                        (Map and itinerary features coming next!)
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                </div>
+            </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+    );
 }
