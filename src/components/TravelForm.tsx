@@ -8,6 +8,7 @@ import PlaneIcon from './icons/PlaneIcon';
 import MapPinIcon from './icons/MapPinIcon';
 import CalendarIcon from './icons/CalendarIcon';
 import MoneyIcon from './icons/MoneyIcon';
+import { TravelFormData } from '@/types/travel';
 
 // Define the validation schema using Zod
 const travelFormSchema = z.object({
@@ -16,9 +17,6 @@ const travelFormSchema = z.object({
     duration: z.number().min(1, 'Trip must be at least 1 day').max(30, 'Maximum 30 days'),
     budget: z.number().min(100, 'Budget must be at least $100').max(100000, 'Budget seems too high!')
 });
-
-// TypeScript type from our schema
-type TravelFormData = z.infer<typeof travelFormSchema>;
 
 // Props interface for our component
 interface TravelFormProps {
@@ -194,7 +192,7 @@ export default function TravelForm({ onSubmit, isLoading = false }: TravelFormPr
                     type="submit"
                     disabled={!isValid || isLoading}
                     className={`w-full py-4 px-6 rounded-lg font-semibold text-white transition-all duration-200 ${isValid && !isLoading
-                        ? 'bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5'
+                        ? 'bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 cursor-pointer'
                         : 'bg-gray-400 cursor-not-allowed'
                         }`}
                 >
@@ -205,7 +203,7 @@ export default function TravelForm({ onSubmit, isLoading = false }: TravelFormPr
                         </span>
                     ) : (
                         <span className="flex items-center justify-center gap-2">
-                            <span>🗺️</span>
+                        
                             Plan My Adventure!
                         </span>
                     )}
@@ -214,7 +212,7 @@ export default function TravelForm({ onSubmit, isLoading = false }: TravelFormPr
 
             {/* Footer */}
             <div className="mt-8 pt-6 border-t border-gray-200">
-                <p className="text-xs text-gray-400 text-center">
+                <p className="text-xs text-gray-400 text-center max-w-64 mx-auto">
                     Your personalized itinerary will include places to visit, stay, and eat!
                 </p>
             </div>
