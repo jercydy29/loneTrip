@@ -4,7 +4,10 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { MapPin, Calendar, DollarSign, Plane } from 'lucide-react';
+import PlaneIcon from './icons/PlaneIcon';
+import MapPinIcon from './icons/MapPinIcon';
+import CalendarIcon from './icons/CalendarIcon';
+import MoneyIcon from './icons/MoneyIcon';
 
 // Define the validation schema using Zod
 const travelFormSchema = z.object({
@@ -48,7 +51,7 @@ export default function TravelForm({ onSubmit, isLoading = false }: TravelFormPr
             <div className="mb-8">
                 <div className="flex items-center gap-3 mb-4">
                     <div className="p-2 bg-blue-100 rounded-lg">
-                        <Plane className="w-6 h-6 text-blue-600" />
+                        <PlaneIcon className="w-6 h-6" />
                     </div>
                     <h1 className="text-2xl font-bold text-gray-800">Plan Your Trip</h1>
                 </div>
@@ -62,7 +65,7 @@ export default function TravelForm({ onSubmit, isLoading = false }: TravelFormPr
                 {/* Origin Input */}
                 <div className="space-y-2">
                     <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                        <MapPin className="w-4 h-4 text-green-600" />
+                        <MapPinIcon className="w-4 h-4" />
                         Where are you starting from?
                     </label>
                     <input
@@ -82,7 +85,7 @@ export default function TravelForm({ onSubmit, isLoading = false }: TravelFormPr
                 {/* Destination Input */}
                 <div className="space-y-2">
                     <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                        <MapPin className="w-4 h-4 text-red-600" />
+                        <MapPinIcon className="w-4 h-4" />
                         Where do you want to go?
                     </label>
                     <input
@@ -102,7 +105,7 @@ export default function TravelForm({ onSubmit, isLoading = false }: TravelFormPr
                 {/* Duration Input */}
                 <div className="space-y-2">
                     <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                        <Calendar className="w-4 h-4 text-purple-600" />
+                        <CalendarIcon className="w-4 h-4" />
                         How many days? ({watchedValues.duration} days)
                     </label>
                     <div className="relative">
@@ -128,7 +131,7 @@ export default function TravelForm({ onSubmit, isLoading = false }: TravelFormPr
                 {/* Budget Input */}
                 <div className="space-y-2">
                     <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                        <DollarSign className="w-4 h-4 text-green-600" />
+                        <MoneyIcon className="w-4 h-4" />
                         What's your budget?
                     </label>
                     <div className="relative">
