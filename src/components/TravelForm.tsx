@@ -109,13 +109,21 @@ export default function TravelForm({ onSubmit, isLoading = false }: TravelFormPr
                         How many days? ({watchedValues.duration} days)
                     </label>
                     <div className="relative">
-                        <input
-                            {...register('duration', { valueAsNumber: true })}
-                            type="range"
-                            min="1"
-                            max="30"
-                            className="slider-with-fill w-full"
-                        />
+                        <div className="slider-container">
+                            <div 
+                                className="slider-fill" 
+                                style={{ 
+                                    width: `${((watchedValues.duration || 7) - 1) / (30 - 1) * 100}%` 
+                                }}
+                            />
+                            <input
+                                {...register('duration', { valueAsNumber: true })}
+                                type="range"
+                                min="1"
+                                max="30"
+                                className="slider-custom"
+                            />
+                        </div>
                         <div className="flex justify-between text-xs text-gray-500 mt-1">
                             <span>1 day</span>
                             <span>30 days</span>
@@ -152,8 +160,8 @@ export default function TravelForm({ onSubmit, isLoading = false }: TravelFormPr
                             <span>⚠️</span> {errors.budget.message}
                         </p>
                     )}
-                    <p className="text-xs text-gray-500">
-                        💡 Includes accommodation, food, activities, and transportation
+                    <p className="text-xs text-gray-400">
+                        Includes accommodation, food, activities, and transportation
                     </p>
                 </div>
 
@@ -186,8 +194,8 @@ export default function TravelForm({ onSubmit, isLoading = false }: TravelFormPr
                     type="submit"
                     disabled={!isValid || isLoading}
                     className={`w-full py-4 px-6 rounded-lg font-semibold text-white transition-all duration-200 ${isValid && !isLoading
-                            ? 'bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5'
-                            : 'bg-gray-400 cursor-not-allowed'
+                        ? 'bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5'
+                        : 'bg-gray-400 cursor-not-allowed'
                         }`}
                 >
                     {isLoading ? (
@@ -206,8 +214,8 @@ export default function TravelForm({ onSubmit, isLoading = false }: TravelFormPr
 
             {/* Footer */}
             <div className="mt-8 pt-6 border-t border-gray-200">
-                <p className="text-xs text-gray-500 text-center">
-                    Your personalized itinerary will include places to visit, stay, and eat! 🎉
+                <p className="text-xs text-gray-400 text-center">
+                    Your personalized itinerary will include places to visit, stay, and eat!
                 </p>
             </div>
         </div>
