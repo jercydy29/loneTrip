@@ -110,10 +110,10 @@ export default function TravelForm({ onSubmit, isLoading = false }: TravelFormPr
                     </label>
                     <div className="relative">
                         <div className="slider-container">
-                            <div 
-                                className="slider-fill" 
-                                style={{ 
-                                    width: `${((watchedValues.duration || 7) - 1) / (30 - 1) * 100}%` 
+                            <div
+                                className="slider-fill"
+                                style={{
+                                    width: `${((watchedValues.duration || 7) - 1) / (30 - 1) * 100}%`
                                 }}
                             />
                             <input
@@ -143,7 +143,7 @@ export default function TravelForm({ onSubmit, isLoading = false }: TravelFormPr
                         What's your budget?
                     </label>
                     <div className="relative">
-                        <span className="absolute left-3 top-3 text-gray-500">$</span>
+                        <span className="absolute left-3 top-3 text-gray-400">$</span>
                         <input
                             {...register('budget', { valueAsNumber: true })}
                             type="number"
