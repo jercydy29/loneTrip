@@ -21,10 +21,11 @@ const travelFormSchema = z.object({
 // Props interface for our component
 interface TravelFormProps {
     onSubmit: (data: TravelFormData) => void;
+    onFormChange?: (origin: string, destination: string) => void;
     isLoading?: boolean;
 }
 
-export default function TravelForm({ onSubmit, isLoading = false }: TravelFormProps) {
+export default function TravelForm({ onSubmit, onFormChange, isLoading = false }: TravelFormProps) {
     // Set up the form with react-hook-form and zod validation
     const {
         register,
@@ -42,6 +43,13 @@ export default function TravelForm({ onSubmit, isLoading = false }: TravelFormPr
 
     // Watch form values for real-time updates
     const watchedValues = watch();
+
+    // Effect to call onFormChange when origin or destination changes
+    React.useEffect(() => {
+        if (onFormChange && (watchedValues.origin || watchedValues.destination)) {
+            onFormChange(watchedValues.origin || '', watchedValues.destination || '');
+        }
+    }, [watchedValues.origin, watchedValues.destination, onFormChange]);
 
     return (
         <div className="w-96 h-screen bg-white shadow-2xl p-6 overflow-y-auto border-r border-gray-200">

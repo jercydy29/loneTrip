@@ -8,6 +8,13 @@ export default function Home() {
     const [tripData, setTripData] = useState<TravelFormData | null>(null);
     const [itinerary, setItinerary] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [currentOrigin, setCurrentOrigin] = useState<string>('');
+    const [currentDestination, setCurrentDestination] = useState<string>('');
+
+    const handleFormChange = (origin: string, destination: string) => {
+        setCurrentOrigin(origin);
+        setCurrentDestination(destination);
+    };
 
     const handleTravelFormSubmit = async (data: TravelFormData) => {
         console.log('🎉 Form submitted with data:', data);
@@ -43,13 +50,17 @@ export default function Home() {
         <div className="min-h-screen bg-gray-50 flex">
             <TravelForm
                 onSubmit={handleTravelFormSubmit}
+                onFormChange={handleFormChange}
                 isLoading={isLoading}
             />
 
             <div className="flex-1 relative">
                 {!tripData ? (
                     <div className="h-full">
-                        <MapView />
+                        <MapView 
+                            origin={currentOrigin}
+                            destination={currentDestination}
+                        />
                     </div>
                 ) : (
                     <div className="h-full bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
