@@ -20,6 +20,11 @@ A modern travel planning application built with Next.js 15, TypeScript, and Tail
 - `npm run start` - Start production server
 - `npm run lint` - Run ESLint
 
+## Git Workflow
+- Always run `npm run lint` before committing to ensure code quality
+- Use descriptive commit messages that explain the purpose of changes
+- Consider creating commits after completing logical units of work
+
 ## Project Structure
 ```
 src/
@@ -66,6 +71,12 @@ src/
 - Use modern React patterns (hooks, functional components)
 - Prefer async/await over promises
 - Use ESLint configuration provided
+
+## Development Workflow
+- Always create a plan using TodoWrite before starting any task
+- Break down complex tasks into smaller, manageable steps
+- Mark todos as in_progress when working on them and completed when finished
+- Use the todo list to track progress and ensure nothing is missed
 
 ## Development Notes
 - Currently on branch: `editing-icon_FromTravel`

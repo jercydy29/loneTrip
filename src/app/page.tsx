@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import TravelForm from '@/components/TravelForm';
-import MapIcon from '@/components/icons/MapIcon';
+import MapView from '@/components/MapView';
 import { TravelFormData } from '@/types/travel';
 export default function Home() {
     const [isLoading, setIsLoading] = useState(false);
@@ -47,22 +47,12 @@ export default function Home() {
             />
 
             <div className="flex-1 relative">
-                <div className="h-full bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-                    {!tripData ? (
-                        <div className="text-center p-8">
-                            <div className="w-128 h-128 mx-auto mb-6 bg-blue-200 rounded-full flex items-center justify-center">
-                                <MapIcon className="w-64 h-64" />
-                            </div>
-                            <h2 className="text-2xl font-bold text-gray-700 mb-4">
-                                Ready for Your Adventure?
-                            </h2>
-                            <p className="text-gray-600 max-w-md mx-auto">
-                                Fill out the form on the left to start planning your perfect trip.
-                                We'll show you the route and create a personalized itinerary!
-                            </p>
-                        </div>
-
-                    ) : (
+                {!tripData ? (
+                    <div className="h-full">
+                        <MapView />
+                    </div>
+                ) : (
+                    <div className="h-full bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
                         <div className="text-center p-8 max-w-2xl">
                             <h2 className="text-3xl font-bold text-gray-800 mb-6">
                                 Your Trip is Being Planned!
@@ -134,14 +124,13 @@ export default function Home() {
                                         Ready to generate your itinerary!
                                     </p>
                                     <p className="text-gray-600">
-                                        Click "Plan My Adventure!" to get started.
+                                        Click &quot;Plan My Adventure!&quot; to get started.
                                     </p>
                                 </div>
                             )}
                         </div>
-                    )}
-
-                </div>
+                    </div>
+                )}
             </div>
         </div>
     );
