@@ -9,6 +9,7 @@ import MapPinIcon from './icons/MapPinIcon';
 import CalendarIcon from './icons/CalendarIcon';
 import MoneyIcon from './icons/MoneyIcon';
 import { TravelFormData } from '@/types/travel';
+import PlacesAutocomplete from './PlacesAutocomplete';
 
 // Define the validation schema using Zod
 const travelFormSchema = z.object({
@@ -31,11 +32,14 @@ export default function TravelForm({ onSubmit, onFormChange, isLoading = false }
         register,
         handleSubmit,
         formState: { errors, isValid },
-        watch
+        watch,
+        setValue
     } = useForm<TravelFormData>({
         resolver: zodResolver(travelFormSchema),
         mode: 'onChange', // Validate as user types
         defaultValues: {
+            origin: '',
+            destination: '',
             duration: 7,
             budget: 2000
         }
@@ -74,9 +78,10 @@ export default function TravelForm({ onSubmit, onFormChange, isLoading = false }
                         <MapPinIcon className="w-6 h-6" />
                         Where are you starting from?
                     </label>
-                    <input
-                        {...register('origin')}
-                        type="text"
+                    <PlacesAutocomplete
+                        name="origin"
+                        value={watchedValues.origin || ''}
+                        onChange={(value) => setValue('origin', value, { shouldValidate: true })}
                         placeholder="e.g., New York, NY"
                         className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors placeholder-gray-400 ${errors.origin ? 'border-red-500 bg-red-50' : 'border-gray-300'
                             }`}
@@ -94,9 +99,10 @@ export default function TravelForm({ onSubmit, onFormChange, isLoading = false }
                         <MapPinIcon className="w-6 h-6" />
                         Where do you want to go?
                     </label>
-                    <input
-                        {...register('destination')}
-                        type="text"
+                    <PlacesAutocomplete
+                        name="destination"
+                        value={watchedValues.destination || ''}
+                        onChange={(value) => setValue('destination', value, { shouldValidate: true })}
                         placeholder="e.g., Paris, France"
                         className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors placeholder-gray-400 ${errors.destination ? 'border-red-500 bg-red-50' : 'border-gray-300'
                             }`}
@@ -195,26 +201,15 @@ export default function TravelForm({ onSubmit, onFormChange, isLoading = false }
                     </div>
                 )}
 
-                {/* Submit Button */}
+                {/* Submit Button - Disabled */}
                 <button
-                    type="submit"
-                    disabled={!isValid || isLoading}
-                    className={`w-full py-4 px-6 rounded-lg font-semibold text-white transition-all duration-200 ${isValid && !isLoading
-                        ? 'bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 cursor-pointer'
-                        : 'bg-gray-400 cursor-not-allowed'
-                        }`}
+                    type="button"
+                    disabled={true}
+                    className="w-full py-4 px-6 rounded-lg font-semibold text-white bg-gray-400 cursor-not-allowed"
                 >
-                    {isLoading ? (
-                        <span className="flex items-center justify-center gap-2">
-                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                            Creating Your Itinerary...
-                        </span>
-                    ) : (
-                        <span className="flex items-center justify-center gap-2">
-                        
-                            Plan My Adventure!
-                        </span>
-                    )}
+                    <span className="flex items-center justify-center gap-2">
+                        Plan My Adventure! (Coming Soon)
+                    </span>
                 </button>
             </form>
 

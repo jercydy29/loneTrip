@@ -1,6 +1,5 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import { Loader } from '@googlemaps/js-api-loader';
 
 interface MapViewProps {
     center?: google.maps.LatLngLiteral;
@@ -26,53 +25,83 @@ export default function MapView({
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        const initMap = async () => {
-            try {
-                // Check if Google Maps API key is available
-                const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-                if (!apiKey) {
-                    setError('Google Maps API key not found');
-                    setIsLoading(false);
+        const loadGoogleMapsScript = () => {
+            return new Promise<void>((resolve, reject) => {
+                if (window.google && window.google.maps) {
+                    console.log('Google Maps already loaded');
+                    resolve();
                     return;
                 }
 
-                const loader = new Loader({
-                    apiKey,
-                    version: 'weekly',
-                    libraries: ['places', 'geometry']
-                });
-
-                const google = await loader.load();
-
-                if (mapRef.current) {
-                    const map = new google.maps.Map(mapRef.current, {
-                        center,
-                        zoom,
-                        mapTypeControl: true,
-                        streetViewControl: true,
-                        fullscreenControl: true,
-                        zoomControl: true,
-                        styles: [
-                            {
-                                featureType: 'poi.business',
-                                stylers: [{ visibility: 'on' }]
-                            }
-                        ]
-                    });
-
-                    mapInstanceRef.current = map;
-                    geocoderRef.current = new google.maps.Geocoder();
+                const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+                if (!apiKey) {
+                    reject(new Error('Google Maps API key not found'));
+                    return;
                 }
 
-                setIsLoading(false);
+                const script = document.createElement('script');
+                script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places,geometry`;
+                script.async = true;
+                script.defer = true;
+                
+                script.onload = () => {
+                    console.log('Google Maps script loaded successfully');
+                    resolve();
+                };
+                
+                script.onerror = () => {
+                    reject(new Error('Failed to load Google Maps script'));
+                };
+
+                document.head.appendChild(script);
+            });
+        };
+
+        const initMap = async () => {
+            try {
+                console.log('Starting map initialization...');
+                
+                await loadGoogleMapsScript();
+
+                // Wait a bit for the DOM to be ready
+                setTimeout(() => {
+                    if (mapRef.current && window.google) {
+                        console.log('Creating map instance...');
+                        const map = new window.google.maps.Map(mapRef.current, {
+                            center,
+                            zoom,
+                            mapTypeControl: true,
+                            streetViewControl: true,
+                            fullscreenControl: true,
+                            zoomControl: true,
+                            styles: [
+                                {
+                                    featureType: 'poi.business',
+                                    stylers: [{ visibility: 'on' }]
+                                }
+                            ]
+                        });
+
+                        mapInstanceRef.current = map;
+                        geocoderRef.current = new window.google.maps.Geocoder();
+                        console.log('Map created successfully');
+                        setIsLoading(false);
+                    } else {
+                        console.error(`Map initialization failed: mapRef=${!!mapRef.current}, google=${!!window.google}`);
+                        setError(`Map initialization failed: mapRef=${!!mapRef.current}, google=${!!window.google}`);
+                        setIsLoading(false);
+                    }
+                }, 100);
             } catch (err) {
-                console.error('Error loading map:', err);
-                setError('Failed to load map');
+                console.error('Detailed error loading map:', err);
+                setError(`Failed to load map: ${err instanceof Error ? err.message : 'Unknown error'}`);
                 setIsLoading(false);
             }
         };
 
-        initMap();
+        // Use a small delay to ensure the DOM is ready
+        const timer = setTimeout(initMap, 100);
+        return () => clearTimeout(timer);
     }, [center, zoom]);
 
     // Handle geocoding and map updates for origin/destination
@@ -107,7 +136,7 @@ export default function MapView({
                             originMarkerRef.current.setMap(null);
                         }
                         // Create new origin marker
-                        originMarkerRef.current = new google.maps.Marker({
+                        originMarkerRef.current = new window.google.maps.Marker({
                             position,
                             map: mapInstanceRef.current,
                             title: `Origin: ${address}`,
@@ -118,7 +147,7 @@ export default function MapView({
                     <circle cx="12" cy="10" r="3" fill="white"/>
                   </svg>
                 `),
-                                scaledSize: new google.maps.Size(32, 32)
+                                scaledSize: new window.google.maps.Size(32, 32)
                             }
                         });
                     } else {
@@ -126,7 +155,7 @@ export default function MapView({
                             destinationMarkerRef.current.setMap(null);
                         }
                         // Create new destination marker
-                        destinationMarkerRef.current = new google.maps.Marker({
+                        destinationMarkerRef.current = new window.google.maps.Marker({
                             position,
                             map: mapInstanceRef.current,
                             title: `Destination: ${address}`,
@@ -137,7 +166,7 @@ export default function MapView({
                     <circle cx="12" cy="10" r="3" fill="white"/>
                   </svg>
                 `),
-                                scaledSize: new google.maps.Size(32, 32)
+                                scaledSize: new window.google.maps.Size(32, 32)
                             }
                         });
                     }
