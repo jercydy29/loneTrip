@@ -44,77 +44,57 @@ Seasonal Highlights: ${season.highlights.join(', ')}
 
     const regionNames = regions.map((rwd: { region: { name: string } }) => rwd.region.name).join(' and ');
     
-    const prompt = `Create a comprehensive and detailed ${totalDuration}-day Japan travel itinerary covering multiple regions: ${regionNames}.
+    const prompt = `You are a JSON API. Return ONLY valid JSON, no other text.
 
-MULTI-REGION JOURNEY:
+Create ${totalDuration}-day Japan itinerary for: ${regionNames}
+
 ${regionsContext}${styleContext}${seasonContext}
 
-ITINERARY REQUIREMENTS:
-- Create a cohesive journey across multiple regions with logical travel flow
-- Allocate the specified number of days to each region as requested
-- Include authentic Japanese experiences and cultural insights for each region
-- Provide day-by-day breakdown with 6-8 detailed activities per day (morning, mid-morning, lunch, afternoon, late afternoon, dinner, evening activities)
-- Include traditional and modern attractions appropriate to each region
-- Suggest authentic local cuisine and dining experiences for each meal
-- Include practical information like transportation between regions and within regions
-- Respect Japanese customs and etiquette in recommendations
-- Include both famous attractions and hidden gems
-- Consider seasonal activities and weather conditions
-- Plan efficient transportation routes between regions (JR Pass, Shinkansen, etc.)
-${travelStyle ? `- Emphasize ${travelStyle.name} style experiences throughout all regions` : ''}
+Return this exact JSON structure:
 
-IMPORTANT - DO NOT INCLUDE THESE BORING TASKS AS ACTIVITIES:
-- DO NOT include "Purchase Suica/Pasmo card" as an activity
-- DO NOT include "Check into hotel" as an activity
-- DO NOT include "Currency exchange" or "Withdraw cash" as activities
-- DO NOT include "Collect luggage" or "Airport transfer" as activities
-- DO NOT include "Buy SIM card" or "Rent pocket WiFi" as activities
-- DO NOT include "Immigration/customs" as activities
-- These are administrative tasks, not experiences! Focus on actual attractions, food, culture, and fun activities!
+{
+  "days": [
+    {
+      "dayNumber": 1,
+      "region": "Tokyo",
+      "activities": [
+        {
+          "id": "day1-activity1",
+          "title": "Senso-ji Temple Visit",
+          "time": "09:00",
+          "duration": 120,
+          "cost": 500,
+          "type": "attraction",
+          "icon": "⛩️",
+          "location": "Asakusa",
+          "description": "Visit Tokyo's oldest temple (645 AD). Explore Nakamise-dori shopping street, see the giant red lantern, try fortune telling. Best visited early to avoid crowds."
+        },
+        {
+          "id": "day1-activity2", 
+          "title": "Sushi Breakfast",
+          "time": "11:00",
+          "duration": 60,
+          "cost": 2000,
+          "type": "meal",
+          "icon": "🍣",
+          "location": "Tsukiji",
+          "description": "Fresh sushi at famous Tsukiji Outer Market. Try tuna, sea urchin, and seasonal fish. Authentic Tokyo breakfast experience."
+        }
+      ]
+    }
+  ]
+}
 
-DETAILED DAILY STRUCTURE REQUIRED:
-For each day, include these specific activity types:
-1. Early Morning Activity (7:00-9:00) - Temple visits, morning markets, sunrise spots
-2. Morning Activity (9:00-11:00) - Major attractions, museums, cultural sites
-3. Late Morning/Lunch (11:00-13:00) - Local restaurant, food market, cooking experience
-4. Afternoon Activity (13:00-15:00) - Parks, gardens, shopping districts, workshops
-5. Late Afternoon (15:00-17:00) - Additional attractions, tea ceremonies, local experiences
-6. Dinner (17:00-19:00) - Traditional restaurants, izakayas, regional specialties
-7. Evening Activity (19:00-21:00) - Night markets, entertainment districts, cultural performances
-8. Optional Late Evening (21:00+) - Bars, karaoke, night views, onsen relaxation
+Rules:
+- ${totalDuration} days total
+- 6-8 activities per day 
+- Times: 07:00, 09:00, 11:00, 13:00, 15:00, 17:00, 19:00, 21:00
+- Types: attraction, meal, experience
+- Include breakfast, lunch, dinner
+- NO admin tasks (tickets, hotel check-in)
+- Rich descriptions with cultural context
 
-CONTENT RICHNESS:
-- Include specific restaurant names and local food specialties for each meal
-- Mention exact transportation methods (which train lines, bus routes, walking times)
-- Add cultural context and historical background for major sites
-- Include shopping opportunities and local craft experiences
-- Suggest photo spots and Instagram-worthy locations
-- Add practical tips like entry fees, opening hours, and reservation requirements
-- Include backup indoor activities for rainy weather
-- Mention seasonal highlights specific to travel dates
-
-FORMAT REQUIREMENTS:
-- Use clear "Day 1", "Day 2", "Day 3" etc. headers
-- List each activity with bullet points or numbered items
-- Include approximate times for each activity
-- Add brief descriptions for each activity (2-3 sentences minimum)
-- Include estimated costs in Japanese Yen
-- Mention difficulty levels and accessibility information
-- Add local etiquette tips for each type of activity
-
-EXAMPLE FORMAT:
-Day 1: Tokyo Exploration
-• 7:00 AM - Early morning visit to Tsukiji Outer Market for fresh sushi breakfast (¥2000)
-• 9:00 AM - Explore Senso-ji Temple in Asakusa district with traditional shopping (¥500)
-• 11:30 AM - Lunch at famous tempura restaurant Daikokuya established 1887 (¥3000)
-• 1:00 PM - Stroll through Ueno Park and visit Tokyo National Museum (¥1000)
-• 3:00 PM - Experience traditional tea ceremony in Ginza (¥2500)
-• 6:00 PM - Dinner at high-end sushi restaurant in Ginza district (¥8000)
-• 8:00 PM - Evening walk through illuminated Tokyo Station area (Free)
-• 9:30 PM - Drinks and karaoke in Shibuya entertainment district (¥3000)
-
-FOCUS ON EXPERIENCES, NOT ADMIN TASKS!
-Make each day feel packed with authentic Japanese experiences while maintaining a realistic and enjoyable pace. Every activity should be something travelers are excited to do - temples, food, culture, shopping, entertainment, nature, etc. NO boring administrative tasks like buying transit cards or checking into hotels!`;
+RETURN ONLY JSON - NO MARKDOWN BACKTICKS, NO EXPLANATIONS!`;
 
     // Check if Gemini API key is available
     if (!process.env.GEMINI_API_KEY) {

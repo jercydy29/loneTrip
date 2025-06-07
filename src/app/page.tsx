@@ -3,7 +3,6 @@ import { useState } from 'react';
 import JapanTravelForm from '@/components/JapanTravelForm';
 import TimelineView from '@/components/TimelineView';
 import { JapanTravelFormData, JapanTimeline } from '@/types/travel';
-import { parseItineraryToTimeline } from '@/lib/itineraryParser';
 
 export default function Home() {
     const [isLoading, setIsLoading] = useState(false);
@@ -11,6 +10,7 @@ export default function Home() {
     const [itinerary, setItinerary] = useState<string | null>(null);
     const [timeline, setTimeline] = useState<JapanTimeline | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [showRawOutput, setShowRawOutput] = useState(false);
 
     const handleJapanTravelFormSubmit = async (data: JapanTravelFormData) => {
         console.log('🇯🇵 Japan journey submitted:', data);
@@ -35,11 +35,60 @@ export default function Home() {
                 throw new Error(`${errorMessage}${errorDetails ? ` (${errorDetails})` : ''}`);
             }
 
+            // Store raw AI response for testing
             setItinerary(result.itinerary);
             
-            // Parse the itinerary into timeline format
-            const parsedTimeline = parseItineraryToTimeline(result.itinerary, data);
-            setTimeline(parsedTimeline);
+            // Parse JSON response directly into timeline
+            let timelineData: JapanTimeline;
+            try {
+                // Clean up response - remove markdown backticks if present
+                let cleanResponse = result.itinerary.trim();
+                if (cleanResponse.startsWith('```json')) {
+                    cleanResponse = cleanResponse.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+                } else if (cleanResponse.startsWith('```')) {
+                    cleanResponse = cleanResponse.replace(/^```\s*/, '').replace(/\s*```$/, '');
+                }
+                
+                console.log('🔍 Attempting to parse JSON response...');
+                console.log('📄 Clean response (first 500 chars):', cleanResponse.substring(0, 500));
+                
+                const jsonData = JSON.parse(cleanResponse);
+                
+                if (!jsonData.days || !Array.isArray(jsonData.days)) {
+                    throw new Error('Invalid JSON structure: missing days array');
+                }
+                
+                timelineData = {
+                    days: jsonData.days.map((day: any, index: number) => ({
+                        dayNumber: day.dayNumber || (index + 1),
+                        region: data.regions.find(r => r.region.name === day.region)?.region || data.regions[0].region,
+                        activities: (day.activities || []).map((activity: any, actIndex: number) => ({
+                            id: activity.id || `day${day.dayNumber}-activity${actIndex + 1}`,
+                            name: activity.title || 'Activity',
+                            description: activity.description || 'No description available',
+                            startTime: activity.time || '09:00',
+                            duration: activity.duration || 120,
+                            type: activity.type || 'attraction',
+                            icon: activity.icon || '📍',
+                            estimatedCost: activity.cost || 0,
+                            location: activity.location || 'Japan'
+                        })),
+                        totalCost: (day.activities || []).reduce((sum: number, activity: any) => sum + (activity.cost || 0), 0)
+                    })),
+                    totalDuration: data.totalDuration,
+                    regions: data.regions,
+                    travelStyle: data.travelStyle,
+                    season: data.season
+                };
+                
+                console.log('✅ Successfully parsed JSON response');
+            } catch (error) {
+                console.error('❌ Failed to parse JSON response:', error);
+                console.error('📄 Raw response:', result.itinerary);
+                throw new Error('AI returned invalid format. Please try again.');
+            }
+            
+            setTimeline(timelineData);
             
             console.log('✅ Japan journey planning completed!');
         } catch (error) {
@@ -197,12 +246,45 @@ export default function Home() {
                                         />
                                     </div>
                                 ) : null}
-                                <div className="mt-6">
+                                
+                                {/* Raw AI Output for Testing */}
+                                {showRawOutput && itinerary && (
+                                    <div className="mt-6 max-w-4xl mx-auto">
+                                        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                                            <div className="flex items-center justify-between mb-3">
+                                                <h4 className="text-lg font-medium text-gray-800">Raw AI Output (Testing)</h4>
+                                                <button
+                                                    onClick={() => setShowRawOutput(false)}
+                                                    className="text-gray-500 hover:text-gray-700 text-sm"
+                                                >
+                                                    ✕ Close
+                                                </button>
+                                            </div>
+                                            <div className="bg-white border rounded p-3 max-h-96 overflow-y-auto">
+                                                <pre className="text-xs text-gray-700 whitespace-pre-wrap font-mono">
+                                                    {itinerary}
+                                                </pre>
+                                            </div>
+                                            <div className="mt-3 text-xs text-gray-500">
+                                                💡 This shows the raw text generated by the AI before parsing into the timeline format.
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                                
+                                <div className="mt-6 space-y-3">
+                                    <button 
+                                        onClick={() => setShowRawOutput(!showRawOutput)}
+                                        className="mr-3 px-4 py-2 bg-blue-100 text-blue-700 rounded-full hover:bg-blue-200 transition-colors text-sm"
+                                    >
+                                        {showRawOutput ? 'Hide' : 'Show'} Raw AI Output
+                                    </button>
                                     <button 
                                         onClick={() => {
                                             setItinerary(null);
                                             setTimeline(null);
                                             setTripData(null);
+                                            setShowRawOutput(false);
                                         }}
                                         className="px-6 py-3 bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200 transition-colors"
                                     >
