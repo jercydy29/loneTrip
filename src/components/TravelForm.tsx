@@ -10,6 +10,7 @@ import CalendarIcon from './icons/CalendarIcon';
 import MoneyIcon from './icons/MoneyIcon';
 import { TravelFormData } from '@/types/travel';
 import PlacesAutocomplete from './PlacesAutocomplete';
+import MoodSelector from './MoodSelector';
 
 // Define the validation schema using Zod
 const travelFormSchema = z.object({
@@ -23,10 +24,11 @@ const travelFormSchema = z.object({
 interface TravelFormProps {
     onSubmit: (data: TravelFormData) => void;
     onFormChange?: (origin: string, destination: string) => void;
+    onInputFocus?: (inputType: 'origin' | 'destination' | null) => void;
     isLoading?: boolean;
 }
 
-export default function TravelForm({ onSubmit, onFormChange, isLoading = false }: TravelFormProps) {
+export default function TravelForm({ onSubmit, onFormChange, onInputFocus, isLoading = false }: TravelFormProps) {
     // Set up the form with react-hook-form and zod validation
     const {
         register,
@@ -41,7 +43,8 @@ export default function TravelForm({ onSubmit, onFormChange, isLoading = false }
             origin: '',
             destination: '',
             duration: 7,
-            budget: 2000
+            budget: 2000,
+            mood: undefined
         }
     });
 
@@ -55,6 +58,22 @@ export default function TravelForm({ onSubmit, onFormChange, isLoading = false }
         }
     }, [watchedValues.origin, watchedValues.destination, onFormChange]);
 
+    // Focus/blur handlers for input tracking
+    const handleOriginFocus = React.useCallback(() => {
+        onInputFocus?.('origin');
+    }, [onInputFocus]);
+
+    const handleDestinationFocus = React.useCallback(() => {
+        onInputFocus?.('destination');
+    }, [onInputFocus]);
+
+    const handleInputBlur = React.useCallback(() => {
+        // Debounced blur to handle quick focus switches
+        setTimeout(() => {
+            onInputFocus?.(null);
+        }, 150);
+    }, [onInputFocus]);
+
     return (
         <div className="w-96 h-screen bg-white shadow-2xl p-6 overflow-y-auto border-r border-gray-200">
             {/* Header Section */}
@@ -66,7 +85,7 @@ export default function TravelForm({ onSubmit, onFormChange, isLoading = false }
                     <h1 className="text-2xl font-bold text-gray-800">Plan Your Trip</h1>
                 </div>
                 <p className="text-gray-600 text-sm">
-                    Tell us about your dream destination and we'll create the perfect itinerary! ✨
+                    Tell us about your dream destination and we&apos;ll create the perfect itinerary! ✨
                 </p>
             </div>
 
@@ -82,6 +101,8 @@ export default function TravelForm({ onSubmit, onFormChange, isLoading = false }
                         name="origin"
                         value={watchedValues.origin || ''}
                         onChange={(value) => setValue('origin', value, { shouldValidate: true })}
+                        onFocus={handleOriginFocus}
+                        onBlur={handleInputBlur}
                         placeholder="e.g., New York, NY"
                         className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors placeholder-gray-400 ${errors.origin ? 'border-red-500 bg-red-50' : 'border-gray-300'
                             }`}
@@ -103,6 +124,8 @@ export default function TravelForm({ onSubmit, onFormChange, isLoading = false }
                         name="destination"
                         value={watchedValues.destination || ''}
                         onChange={(value) => setValue('destination', value, { shouldValidate: true })}
+                        onFocus={handleDestinationFocus}
+                        onBlur={handleInputBlur}
                         placeholder="e.g., Paris, France"
                         className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors placeholder-gray-400 ${errors.destination ? 'border-red-500 bg-red-50' : 'border-gray-300'
                             }`}
@@ -152,7 +175,7 @@ export default function TravelForm({ onSubmit, onFormChange, isLoading = false }
                 <div className="space-y-2">
                     <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
                         <MoneyIcon className="w-6 h-6" />
-                        What's your budget?
+                        What&apos;s your budget?
                     </label>
                     <div className="relative">
                         <span className="absolute left-3 top-3 text-gray-400">$</span>
@@ -177,6 +200,15 @@ export default function TravelForm({ onSubmit, onFormChange, isLoading = false }
                     </p>
                 </div>
 
+                {/* Mood Selector */}
+                <div className="space-y-2">
+                    <MoodSelector
+                        selectedMood={watchedValues.mood}
+                        onMoodChange={(mood) => setValue('mood', mood, { shouldValidate: true })}
+                        className="w-full"
+                    />
+                </div>
+
                 {/* Trip Summary Preview */}
                 {isValid && watchedValues.origin && watchedValues.destination && (
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-2">
@@ -197,18 +229,38 @@ export default function TravelForm({ onSubmit, onFormChange, isLoading = false }
                                 <strong>Daily Budget:</strong> ~$
                                 {Math.round((watchedValues.budget || 0) / (watchedValues.duration || 1))}/day
                             </p>
+                            {watchedValues.mood && (
+                                <p>
+                                    <strong>Travel Mood:</strong> {watchedValues.mood.primary} 
+                                    (Intensity: {watchedValues.mood.intensity}/5)
+                                </p>
+                            )}
                         </div>
                     </div>
                 )}
 
-                {/* Submit Button - Disabled */}
+                {/* Submit Button */}
                 <button
-                    type="button"
-                    disabled={true}
-                    className="w-full py-4 px-6 rounded-lg font-semibold text-white bg-gray-400 cursor-not-allowed"
+                    type="submit"
+                    disabled={!isValid || isLoading}
+                    className={`w-full py-4 px-6 rounded-lg font-semibold text-white transition-all duration-200 ${
+                        !isValid || isLoading
+                            ? 'bg-gray-400 cursor-not-allowed'
+                            : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transform hover:scale-[1.02] shadow-lg hover:shadow-xl'
+                    }`}
                 >
                     <span className="flex items-center justify-center gap-2">
-                        Plan My Adventure! (Coming Soon)
+                        {isLoading ? (
+                            <>
+                                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                Creating Your Adventure...
+                            </>
+                        ) : (
+                            <>
+                                <span>✨</span>
+                                Plan My Adventure!
+                            </>
+                        )}
                     </span>
                 </button>
             </form>

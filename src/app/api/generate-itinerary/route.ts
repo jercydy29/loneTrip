@@ -12,7 +12,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
 export async function POST(request: NextRequest) {
   try {
-    const { origin, destination, duration, budget } = await request.json();
+    const { origin, destination, duration, budget, mood } = await request.json();
 
     if (!origin || !destination || !duration || !budget) {
       return NextResponse.json(
@@ -21,7 +21,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const prompt = `Create a detailed ${duration}-day travel itinerary from ${origin} to ${destination} with a budget of $${budget}.
+    // Build mood context for AI prompt
+    const moodContext = mood ? `
+    
+TRAVEL MOOD CONTEXT:
+- Primary mood: ${mood.primary}
+- Intensity level: ${mood.intensity}/5
+- Focus on ${mood.primary} activities and experiences
+${mood.primary === 'adventure' ? '- Include outdoor activities, thrilling experiences, and active pursuits' : ''}
+${mood.primary === 'relaxation' ? '- Include spa, peaceful activities, and stress-free experiences' : ''}
+${mood.primary === 'cultural' ? '- Include museums, historical sites, and local cultural experiences' : ''}
+${mood.primary === 'romantic' ? '- Include intimate experiences, couple activities, and romantic settings' : ''}
+${mood.primary === 'foodie' ? '- Include local cuisine, food tours, and culinary experiences' : ''}
+${mood.primary === 'nature' ? '- Include parks, natural attractions, and wildlife experiences' : ''}
+${mood.primary === 'urban' ? '- Include city attractions, nightlife, and modern experiences' : ''}
+${mood.primary === 'wellness' ? '- Include spa, meditation, yoga, and mindful experiences' : ''}
+` : '';
+
+    const prompt = `Create a detailed ${duration}-day travel itinerary from ${origin} to ${destination} with a budget of $${budget}.${moodContext}
 
 Please provide:
 1. Daily breakdown with 2-3 activities per day
@@ -47,8 +64,8 @@ ${prompt}`;
       const response = await result.response;
       itinerary = response.text();
       
-    } catch (geminiError: any) {
-      console.log('Gemini API failed, using mock data:', geminiError.message);
+    } catch (geminiError: unknown) {
+      console.log('Gemini API failed, using mock data:', geminiError instanceof Error ? geminiError.message : 'Unknown error');
       
       itinerary = `🗺️ **${duration}-Day Travel Itinerary: ${origin} → ${destination}**
 Budget: $${budget.toLocaleString()}

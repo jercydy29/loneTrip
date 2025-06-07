@@ -281,3 +281,36 @@ body {
 .slider-simple:hover {
     background: #d1d5db;
 }
+
+/* ===== GOOGLE PLACES AUTOCOMPLETE STYLING ===== */
+/* Simple, default autocomplete styling */
+.pac-container {
+    background-color: #ffffff;
+    border: 1px solid #ccc;
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+    z-index: 1000;
+}
+
+.pac-item {
+    padding: 8px;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+}
+
+.pac-item:hover,
+.pac-item-selected {
+    background-color: #f0f0f0;
+}
+
+.pac-item-query {
+    color: #000;
+}
+
+.pac-matched {
+    font-weight: bold;
+}
+
+.pac-icon {
+    display: none;
+}

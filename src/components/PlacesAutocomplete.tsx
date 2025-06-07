@@ -9,6 +9,8 @@ interface PlacesAutocompleteProps {
     placeholder: string;
     className?: string;
     name: string;
+    onFocus?: () => void;
+    onBlur?: () => void;
 }
 
 export default function PlacesAutocomplete({ 
@@ -16,11 +18,13 @@ export default function PlacesAutocomplete({
     onChange, 
     placeholder, 
     className = '', 
-    name 
+    name,
+    onFocus,
+    onBlur
 }: PlacesAutocompleteProps) {
     const inputRef = useRef<HTMLInputElement>(null);
     const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
-    const [isLoaded, setIsLoaded] = useState(false);
+    const [, setIsLoaded] = useState(false);
 
     useEffect(() => {
         const initAutocomplete = async () => {
@@ -105,6 +109,8 @@ export default function PlacesAutocomplete({
             value={value}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
+            onFocus={onFocus}
+            onBlur={onBlur}
             placeholder={placeholder}
             className={className}
             autoComplete="off"

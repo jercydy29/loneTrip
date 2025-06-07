@@ -7,6 +7,7 @@ interface MapViewProps {
     className?: string;
     origin?: string;
     destination?: string;
+    focusedInput?: 'origin' | 'destination' | null;
 }
 
 export default function MapView({
@@ -14,7 +15,8 @@ export default function MapView({
     zoom = 10,
     className = "w-full h-full",
     origin,
-    destination
+    destination,
+    focusedInput
 }: MapViewProps) {
     const mapRef = useRef<HTMLDivElement>(null);
     const mapInstanceRef = useRef<google.maps.Map | null>(null);
@@ -188,6 +190,47 @@ export default function MapView({
 
         return () => clearTimeout(debounceTimer);
     }, [origin, destination]);
+
+    // Handle focus-based map panning (immediate response)
+    useEffect(() => {
+        const panToFocusedLocation = async (address: string, inputType: 'origin' | 'destination') => {
+            if (!geocoderRef.current || !mapInstanceRef.current || !address.trim()) {
+                return;
+            }
+
+            try {
+                const results = await new Promise<google.maps.GeocoderResult[]>((resolve, reject) => {
+                    geocoderRef.current!.geocode({ address }, (results, status) => {
+                        if (status === 'OK' && results) {
+                            resolve(results);
+                        } else {
+                            reject(new Error(`Geocoding failed: ${status}`));
+                        }
+                    });
+                });
+
+                if (results.length > 0) {
+                    const location = results[0].geometry.location;
+                    const position = { lat: location.lat(), lng: location.lng() };
+
+                    // Focus pan with wider zoom for context
+                    mapInstanceRef.current.panTo(position);
+                    mapInstanceRef.current.setZoom(7); // Wider view for focus
+
+                    console.log(`Map panned to ${inputType}: ${address}`);
+                }
+            } catch (error) {
+                console.error(`Error panning to focused ${inputType}:`, error);
+            }
+        };
+
+        if (focusedInput && mapInstanceRef.current) {
+            const targetLocation = focusedInput === 'origin' ? origin : destination;
+            if (targetLocation && targetLocation.length > 2) {
+                panToFocusedLocation(targetLocation, focusedInput);
+            }
+        }
+    }, [focusedInput, origin, destination]);
 
     if (error) {
         return (
