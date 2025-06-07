@@ -122,7 +122,10 @@ RETURN ONLY JSON - NO MARKDOWN BACKTICKS, NO EXPLANATIONS!`;
       const text = response.text();
       
       console.log('✅ Gemini API success, generated', text.length, 'characters');
-      return NextResponse.json({ itinerary: text });
+      return NextResponse.json({ 
+        itinerary: text,
+        prompt: prompt 
+      });
       
     } catch (geminiError: unknown) {
       const errorMessage = geminiError instanceof Error ? geminiError.message : 'Unknown error';
