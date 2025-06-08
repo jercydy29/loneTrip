@@ -61,10 +61,26 @@ export default function Home() {
                 }
                 
                 timelineData = {
-                    days: jsonData.days.map((day: any, index: number) => ({
-                        dayNumber: day.dayNumber || (index + 1),
-                        region: data.regions.find(r => r.region.name === day.region)?.region || data.regions[0].region,
-                        activities: (day.activities || []).map((activity: any, actIndex: number) => ({
+                    days: jsonData.days.map((day: any, index: number) => {
+                        // Better region matching logic
+                        const dayNumber = day.dayNumber || (index + 1);
+                        let assignedRegion = data.regions[0].region; // fallback
+                        
+                        // Calculate which region this day should belong to based on day allocation
+                        // Regions are already sorted by user's chosen order in form submission
+                        let totalDaysProcessed = 0;
+                        for (let i = 0; i < data.regions.length; i++) {
+                            if (dayNumber <= totalDaysProcessed + data.regions[i].days) {
+                                assignedRegion = data.regions[i].region;
+                                break;
+                            }
+                            totalDaysProcessed += data.regions[i].days;
+                        }
+                        
+                        return {
+                            dayNumber,
+                            region: assignedRegion,
+                            activities: (day.activities || []).map((activity: any, actIndex: number) => ({
                             id: activity.id || `day${day.dayNumber}-activity${actIndex + 1}`,
                             name: activity.title || 'Activity',
                             description: activity.description || 'No description available',
@@ -74,12 +90,13 @@ export default function Home() {
                             icon: activity.icon || '📍',
                             estimatedCost: activity.cost || 0,
                             location: activity.location || 'Japan'
-                        })),
-                        totalCost: (day.activities || []).reduce((sum: number, activity: any) => sum + (activity.cost || 0), 0)
-                    })),
+                            })),
+                            totalCost: (day.activities || []).reduce((sum: number, activity: any) => sum + (activity.cost || 0), 0)
+                        };
+                    }),
                     totalDuration: data.totalDuration,
                     regions: data.regions,
-                    travelStyle: data.travelStyle,
+                    travelStyles: data.travelStyles,
                     season: data.season
                 };
                 
@@ -157,15 +174,22 @@ export default function Home() {
                             </div>
                         </div>
 
-                        {/* Travel Style & Season */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {tripData.travelStyle && (
-                                <div className="flex items-center justify-between">
-                                    <span className="text-gray-600">Style:</span>
-                                    <span className="font-medium flex items-center space-x-2">
-                                        <span>{tripData.travelStyle.icon}</span>
-                                        <span>{tripData.travelStyle.name}</span>
-                                    </span>
+                        {/* Travel Styles & Season */}
+                        <div className="space-y-4">
+                            {tripData.travelStyles.length > 0 && (
+                                <div>
+                                    <h4 className="text-sm font-medium text-gray-600 mb-2">Travel Styles:</h4>
+                                    <div className="flex flex-wrap gap-2">
+                                        {tripData.travelStyles.map((style) => (
+                                            <span 
+                                                key={style.id}
+                                                className="inline-flex items-center space-x-1 bg-red-50 text-red-700 px-3 py-1 rounded-full text-sm border border-red-200"
+                                            >
+                                                <span>{style.icon}</span>
+                                                <span>{style.name}</span>
+                                            </span>
+                                        ))}
+                                    </div>
                                 </div>
                             )}
                             {tripData.season && (

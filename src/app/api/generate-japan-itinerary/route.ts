@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     console.log('📝 Request body:', JSON.stringify(body, null, 2));
     
-    const { regions, totalDuration, travelStyle, season } = body;
+    const { regions, totalDuration, travelStyles, season } = body;
 
     if (!regions || !Array.isArray(regions) || regions.length === 0 || !totalDuration) {
       console.log('❌ Missing required fields');
@@ -31,9 +31,9 @@ Description: ${regionWithDays.region.description}
 Major Prefectures: ${regionWithDays.region.prefecture?.join(', ') || 'Not specified'}
 `).join('\n');
 
-    const styleContext = travelStyle ? `
-TRAVEL STYLE: ${travelStyle.name} (${travelStyle.nameJapanese})
-Style Focus: ${travelStyle.description}
+    const styleContext = travelStyles && travelStyles.length > 0 ? `
+TRAVEL STYLES: ${travelStyles.map((style: any) => `${style.name} (${style.nameJapanese})`).join(', ')}
+Style Focus: ${travelStyles.map((style: any) => style.description).join(', ')}
 ` : '';
 
     const seasonContext = season ? `

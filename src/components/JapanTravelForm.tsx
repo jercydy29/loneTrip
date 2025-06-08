@@ -141,9 +141,9 @@ interface JapanTravelFormProps {
 
 export default function JapanTravelForm({ onSubmit, isLoading = false }: JapanTravelFormProps) {
     const [selectedRegions, setSelectedRegions] = useState<RegionWithDays[]>([]);
-    const [selectedStyle, setSelectedStyle] = useState<JapanTravelStyle | null>(null);
+    const [selectedStyles, setSelectedStyles] = useState<JapanTravelStyle[]>([]);
     const [selectedSeason, setSelectedSeason] = useState<JapanSeason | null>(null);
-    const [step, setStep] = useState<'region' | 'style' | 'season' | 'summary'>('region');
+    const [step, setStep] = useState<'region' | 'ordering' | 'style' | 'season' | 'summary'>('region');
 
     const totalDays = selectedRegions.reduce((sum, regionWithDays) => sum + regionWithDays.days, 0);
     const maxDays = 7;
@@ -170,12 +170,24 @@ export default function JapanTravelForm({ onSubmit, isLoading = false }: JapanTr
         ));
     };
 
+    const handleStyleToggle = (style: JapanTravelStyle) => {
+        const isSelected = selectedStyles.some(s => s.id === style.id);
+        if (isSelected) {
+            setSelectedStyles(selectedStyles.filter(s => s.id !== style.id));
+        } else {
+            setSelectedStyles([...selectedStyles, style]);
+        }
+    };
+
     const handleSubmit = () => {
         if (selectedRegions.length > 0 && totalDays > 0) {
+            // Sort regions by their order before submitting
+            const orderedRegions = [...selectedRegions].sort((a, b) => (a.order || 0) - (b.order || 0));
+            
             const formData: JapanTravelFormData = {
-                regions: selectedRegions,
+                regions: orderedRegions,
                 totalDuration: totalDays,
-                travelStyle: selectedStyle || undefined,
+                travelStyles: selectedStyles,
                 season: selectedSeason || undefined,
                 interests: [] // We'll implement this later
             };
@@ -205,12 +217,12 @@ export default function JapanTravelForm({ onSubmit, isLoading = false }: JapanTr
                 {/* Progress Indicator */}
                 <div className="flex justify-center mb-8">
                     <div className="flex space-x-2">
-                        {['region', 'style', 'season', 'summary'].map((stepName, index) => (
+                        {['region', 'ordering', 'style', 'season', 'summary'].map((stepName, index) => (
                             <div 
                                 key={stepName}
                                 className={`w-2 h-2 rounded-full transition-all duration-300 ${
                                     step === stepName ? 'bg-red-500 w-8' : 
-                                    ['region', 'style', 'season'].indexOf(step) > index ? 'bg-red-300' : 'bg-gray-200'
+                                    ['region', 'ordering', 'style', 'season'].indexOf(step) > index ? 'bg-red-300' : 'bg-gray-200'
                                 }`}
                             />
                         ))}
@@ -342,7 +354,15 @@ export default function JapanTravelForm({ onSubmit, isLoading = false }: JapanTr
 
                                     <div className="text-center">
                                         <button
-                                            onClick={() => setStep('style')}
+                                            onClick={() => {
+                                                // Initialize order for selected regions
+                                                const regionsWithOrder = selectedRegions.map((regionWithDays, index) => ({
+                                                    ...regionWithDays,
+                                                    order: index + 1
+                                                }));
+                                                setSelectedRegions(regionsWithOrder);
+                                                setStep('ordering');
+                                            }}
                                             disabled={totalDays === 0 || totalDays > maxDays}
                                             className={`px-8 py-3 rounded-full font-medium transition-colors ${
                                                 totalDays > 0 && totalDays <= maxDays
@@ -350,7 +370,7 @@ export default function JapanTravelForm({ onSubmit, isLoading = false }: JapanTr
                                                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                                             }`}
                                         >
-                                            Continue to Travel Style
+                                            Continue to Order Regions
                                         </button>
                                     </div>
                                 </motion.div>
@@ -358,7 +378,138 @@ export default function JapanTravelForm({ onSubmit, isLoading = false }: JapanTr
                         </motion.div>
                     )}
 
-                    {/* Step 2: Travel Style */}
+                    {/* Step 2: Region Ordering */}
+                    {step === 'ordering' && (
+                        <motion.div
+                            key="ordering"
+                            initial={{ opacity: 0, x: 50 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -50 }}
+                            className="space-y-8"
+                        >
+                            <div className="text-center">
+                                <h2 className="text-2xl font-light text-gray-800 mb-2">
+                                    Choose your journey order
+                                </h2>
+                                <p className="text-gray-600">
+                                    Which region would you like to visit first?
+                                </p>
+                            </div>
+
+                            <div className="max-w-2xl mx-auto space-y-4">
+                                {selectedRegions
+                                    .sort((a, b) => (a.order || 0) - (b.order || 0))
+                                    .map((regionWithDays, index) => (
+                                    <motion.div
+                                        key={regionWithDays.region.id}
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: index * 0.1 }}
+                                        className="bg-white rounded-xl p-6 border-2 border-gray-200 shadow-sm"
+                                    >
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center space-x-4">
+                                                {/* Order Indicator */}
+                                                <div className={`w-12 h-12 rounded-full flex items-center justify-center text-lg font-semibold ${
+                                                    index === 0 
+                                                        ? 'bg-yellow-100 text-yellow-600 border-2 border-yellow-300' 
+                                                        : 'bg-gray-100 text-gray-600'
+                                                }`}>
+                                                    {index === 0 ? '🥇' : index + 1}
+                                                </div>
+                                                
+                                                <div className="flex items-center space-x-3">
+                                                    <span className="text-3xl">{regionWithDays.region.icon}</span>
+                                                    <div>
+                                                        <h3 className="font-medium text-lg text-gray-800">
+                                                            {regionWithDays.region.name}
+                                                        </h3>
+                                                        <p className="text-sm text-gray-500">
+                                                            {regionWithDays.region.nameJapanese} • {regionWithDays.days} day{regionWithDays.days !== 1 ? 's' : ''}
+                                                        </p>
+                                                        {index === 0 && (
+                                                            <p className="text-xs text-yellow-600 font-medium mt-1">
+                                                                🌟 Start here
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            {/* Reorder Buttons */}
+                                            <div className="flex flex-col space-y-1">
+                                                <button
+                                                    onClick={() => {
+                                                        if (index > 0) {
+                                                            const newRegions = [...selectedRegions];
+                                                            const currentRegion = newRegions.find(r => r.region.id === regionWithDays.region.id);
+                                                            const prevRegion = newRegions.find(r => r.order === (regionWithDays.order! - 1));
+                                                            
+                                                            if (currentRegion && prevRegion) {
+                                                                const tempOrder = currentRegion.order;
+                                                                currentRegion.order = prevRegion.order;
+                                                                prevRegion.order = tempOrder;
+                                                                setSelectedRegions(newRegions);
+                                                            }
+                                                        }
+                                                    }}
+                                                    disabled={index === 0}
+                                                    className={`w-8 h-8 rounded-full flex items-center justify-center text-sm ${
+                                                        index === 0 
+                                                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                                                            : 'bg-red-100 text-red-600 hover:bg-red-200'
+                                                    }`}
+                                                >
+                                                    ↑
+                                                </button>
+                                                <button
+                                                    onClick={() => {
+                                                        if (index < selectedRegions.length - 1) {
+                                                            const newRegions = [...selectedRegions];
+                                                            const currentRegion = newRegions.find(r => r.region.id === regionWithDays.region.id);
+                                                            const nextRegion = newRegions.find(r => r.order === (regionWithDays.order! + 1));
+                                                            
+                                                            if (currentRegion && nextRegion) {
+                                                                const tempOrder = currentRegion.order;
+                                                                currentRegion.order = nextRegion.order;
+                                                                nextRegion.order = tempOrder;
+                                                                setSelectedRegions(newRegions);
+                                                            }
+                                                        }
+                                                    }}
+                                                    disabled={index === selectedRegions.length - 1}
+                                                    className={`w-8 h-8 rounded-full flex items-center justify-center text-sm ${
+                                                        index === selectedRegions.length - 1 
+                                                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                                                            : 'bg-red-100 text-red-600 hover:bg-red-200'
+                                                    }`}
+                                                >
+                                                    ↓
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                ))}
+                            </div>
+
+                            <div className="text-center space-x-4">
+                                <button
+                                    onClick={() => setStep('region')}
+                                    className="px-6 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+                                >
+                                    Back
+                                </button>
+                                <button
+                                    onClick={() => setStep('style')}
+                                    className="px-8 py-3 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors font-medium"
+                                >
+                                    Continue to Travel Style
+                                </button>
+                            </div>
+                        </motion.div>
+                    )}
+
+                    {/* Step 3: Travel Style */}
                     {step === 'style' && (
                         <motion.div
                             key="style"
@@ -369,35 +520,53 @@ export default function JapanTravelForm({ onSubmit, isLoading = false }: JapanTr
                         >
                             <div className="text-center">
                                 <h2 className="text-2xl font-light text-gray-800 mb-2">
-                                    What&apos;s your travel style?
+                                    What are your travel styles?
                                 </h2>
-                                <p className="text-gray-600">Choose what resonates with your spirit</p>
+                                <p className="text-gray-600">Select multiple styles that resonate with your spirit</p>
+                                {selectedStyles.length > 0 && (
+                                    <p className="text-sm text-red-600 mt-2">
+                                        {selectedStyles.length} style{selectedStyles.length !== 1 ? 's' : ''} selected
+                                    </p>
+                                )}
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                {travelStyles.map((style) => (
-                                    <motion.button
-                                        key={style.id}
-                                        onClick={() => setSelectedStyle(style)}
-                                        className={`p-4 rounded-xl border-2 transition-all duration-200 text-left ${
-                                            selectedStyle?.id === style.id
-                                                ? 'border-red-400 bg-red-50'
-                                                : 'border-gray-200 bg-white hover:border-gray-300'
-                                        }`}
-                                        whileHover={{ scale: 1.02 }}
-                                        whileTap={{ scale: 0.98 }}
-                                    >
-                                        <div className="text-2xl mb-2">{style.icon}</div>
-                                        <h3 className="font-medium text-gray-800">{style.name}</h3>
-                                        <p className="text-xs text-gray-500 mb-1">{style.nameJapanese}</p>
-                                        <p className="text-sm text-gray-600">{style.description}</p>
-                                    </motion.button>
-                                ))}
+                                {travelStyles.map((style) => {
+                                    const isSelected = selectedStyles.some(s => s.id === style.id);
+                                    return (
+                                        <motion.button
+                                            key={style.id}
+                                            onClick={() => handleStyleToggle(style)}
+                                            className={`p-4 rounded-xl border-2 transition-all duration-200 text-left relative ${
+                                                isSelected
+                                                    ? 'border-red-400 bg-red-50 shadow-lg'
+                                                    : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-md'
+                                            }`}
+                                            whileHover={{ scale: 1.02 }}
+                                            whileTap={{ scale: 0.98 }}
+                                        >
+                                            <div className="text-2xl mb-2">{style.icon}</div>
+                                            <h3 className="font-medium text-gray-800">{style.name}</h3>
+                                            <p className="text-xs text-gray-500 mb-1">{style.nameJapanese}</p>
+                                            <p className="text-sm text-gray-600">{style.description}</p>
+                                            
+                                            {isSelected && (
+                                                <motion.div
+                                                    initial={{ scale: 0 }}
+                                                    animate={{ scale: 1 }}
+                                                    className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs font-medium"
+                                                >
+                                                    ✓
+                                                </motion.div>
+                                            )}
+                                        </motion.button>
+                                    );
+                                })}
                             </div>
 
                             <div className="text-center space-x-4">
                                 <button
-                                    onClick={() => setStep('region')}
+                                    onClick={() => setStep('ordering')}
                                     className="px-6 py-2 text-gray-600 hover:text-gray-800 transition-colors"
                                 >
                                     Back
@@ -515,20 +684,28 @@ export default function JapanTravelForm({ onSubmit, isLoading = false }: JapanTr
                                         </div>
                                     </div>
 
-                                    {/* Travel Style & Season */}
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        {selectedStyle && (
-                                            <div className="flex items-center justify-between">
-                                                <span className="text-gray-600">Style:</span>
-                                                <span className="font-medium">
-                                                    {selectedStyle.icon} {selectedStyle.name}
-                                                </span>
+                                    {/* Travel Styles & Season */}
+                                    <div className="space-y-4">
+                                        {selectedStyles.length > 0 && (
+                                            <div>
+                                                <h4 className="text-sm font-medium text-gray-600 mb-2">Travel Styles:</h4>
+                                                <div className="flex flex-wrap gap-2">
+                                                    {selectedStyles.map((style) => (
+                                                        <span 
+                                                            key={style.id}
+                                                            className="inline-flex items-center space-x-1 bg-red-50 text-red-700 px-3 py-1 rounded-full text-sm border border-red-200"
+                                                        >
+                                                            <span>{style.icon}</span>
+                                                            <span>{style.name}</span>
+                                                        </span>
+                                                    ))}
+                                                </div>
                                             </div>
                                         )}
                                         {selectedSeason && (
                                             <div className="flex items-center justify-between">
                                                 <span className="text-gray-600">Season:</span>
-                                                <span className="font-medium">{selectedSeason.name}</span>
+                                                <span className="font-medium">{selectedSeason.name} ({selectedSeason.nameJapanese})</span>
                                             </div>
                                         )}
                                     </div>

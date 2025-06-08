@@ -1,7 +1,7 @@
 export interface JapanTravelFormData {
     regions: RegionWithDays[]; // Multiple regions with day allocation
     totalDuration: number; // Total days (max 7)
-    travelStyle?: JapanTravelStyle;
+    travelStyles: JapanTravelStyle[]; // Multiple travel styles
     season?: JapanSeason;
     interests: JapanInterest[];
 }
@@ -9,6 +9,7 @@ export interface JapanTravelFormData {
 export interface RegionWithDays {
     region: JapanRegion;
     days: number; // Days allocated to this region
+    order?: number; // Order in which region should appear in itinerary (1 = first, 2 = second, etc.)
 }
 
 export interface JapanRegion {
@@ -116,6 +117,6 @@ export interface JapanTimeline {
     days: TimelineDay[];
     totalDuration: number;
     regions: RegionWithDays[];
-    travelStyle?: JapanTravelStyle;
+    travelStyles: JapanTravelStyle[];
     season?: JapanSeason;
 }

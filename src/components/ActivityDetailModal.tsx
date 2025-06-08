@@ -44,12 +44,12 @@ export default function ActivityDetailModal({ activity, isOpen, onClose }: Activ
         <AnimatePresence>
             {isOpen && (
                 <>
-                    {/* Backdrop */}
+                    {/* Minimalist Blur Backdrop */}
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 bg-black bg-opacity-50 z-50"
+                        className="fixed inset-0 bg-white/30 backdrop-blur-sm z-50"
                         onClick={onClose}
                     />
                     
@@ -62,7 +62,7 @@ export default function ActivityDetailModal({ activity, isOpen, onClose }: Activ
                         onClick={onClose}
                     >
                         <div 
-                            className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto"
+                            className="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 max-w-lg w-full max-h-[90vh] overflow-y-auto"
                             onClick={(e) => e.stopPropagation()}
                         >
                             {/* Header */}
@@ -148,7 +148,21 @@ export default function ActivityDetailModal({ activity, isOpen, onClose }: Activ
                                                 </svg>
                                                 <span className="text-sm font-medium text-blue-800">Location</span>
                                             </div>
-                                            <p className="text-sm text-blue-900">{activity.location}</p>
+                                            <button
+                                                onClick={() => {
+                                                    const searchQuery = encodeURIComponent(`${activity.location}, Japan`);
+                                                    const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${searchQuery}`;
+                                                    window.open(googleMapsUrl, '_blank');
+                                                }}
+                                                className="text-left w-full group hover:bg-blue-100 rounded-md p-1 transition-colors"
+                                            >
+                                                <p className="text-sm text-blue-900 group-hover:text-blue-700 group-hover:underline flex items-center">
+                                                    {activity.location}
+                                                    <svg className="w-3 h-3 ml-1 opacity-60 group-hover:opacity-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                                    </svg>
+                                                </p>
+                                            </button>
                                         </div>
                                     )}
                                 </div>

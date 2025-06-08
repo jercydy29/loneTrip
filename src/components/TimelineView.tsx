@@ -185,7 +185,10 @@ export default function TimelineView({ timeline, onTimelineUpdate }: TimelineVie
                             <div className="flex items-center justify-between mb-3">
                                 <h3 className="text-lg font-medium text-gray-800">Journey Overview</h3>
                                 <div className="text-sm text-gray-500">
-                                    {currentTimeline.travelStyle?.name} • {currentTimeline.season?.name}
+                                    {currentTimeline.travelStyles.length > 0 && (
+                                        <span>{currentTimeline.travelStyles.map(s => s.name).join(', ')} • </span>
+                                    )}
+                                    {currentTimeline.season?.name}
                                 </div>
                             </div>
                             <div className="flex items-center space-x-6">
