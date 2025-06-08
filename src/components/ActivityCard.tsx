@@ -21,13 +21,33 @@ export default function ActivityCard({ activity, dayIndex, onUpdate, onShowDetai
         notes: activity.notes || ''
     });
 
-    const [{ isDragging }, drag] = useDrag({
+    const [{ isDragging }, drag] = useDrag(() => ({
         type: 'activity',
-        item: { id: activity.id, fromDayIndex: dayIndex },
+        item: () => {
+            console.log('🚀 DRAG STARTED:', {
+                activity: activity.name,
+                id: activity.id,
+                fromDay: dayIndex,
+                duration: activity.duration
+            });
+            return { 
+                id: activity.id, 
+                fromDayIndex: dayIndex, 
+                duration: activity.duration,
+                name: activity.name 
+            };
+        },
+        end: (item, monitor) => {
+            console.log('🏁 DRAG ENDED:', {
+                activity: activity.name,
+                dropped: monitor.didDrop(),
+                result: monitor.getDropResult()
+            });
+        },
         collect: (monitor) => ({
             isDragging: monitor.isDragging(),
         }),
-    });
+    }));
 
     const getActivityTypeColor = (type: TimelineActivity['type']) => {
         switch (type) {
@@ -137,7 +157,7 @@ export default function ActivityCard({ activity, dayIndex, onUpdate, onShowDetai
 
     return (
         <motion.div
-            ref={drag}
+            ref={drag as any}
             className={`w-full max-w-full p-2 bg-white border rounded-lg cursor-pointer transition-all duration-200 ${
                 isDragging ? 'opacity-50 scale-95 shadow-lg' : 'hover:shadow-md hover:-translate-y-0.5'
             } group overflow-hidden`}

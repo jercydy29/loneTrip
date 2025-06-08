@@ -88,9 +88,9 @@ Return this exact JSON structure:
 Rules:
 - ${totalDuration} days total
 - 6-8 activities per day 
-- Times: 07:00, 09:00, 11:00, 13:00, 15:00, 17:00, 19:00, 21:00
+- Use these EXACT time slots: 06:00, 07:00, 08:00, 09:00, 10:00, 11:00, 12:00, 13:00, 14:00, 15:00, 16:00, 17:00, 18:00, 19:00, 20:00, 21:00, 22:00, 23:00
 - Types: attraction, meal, experience
-- Include breakfast, lunch, dinner
+- Include breakfast (07:00-09:00), lunch (12:00-14:00), dinner (19:00-21:00)
 - NO admin tasks (tickets, hotel check-in)
 - Rich descriptions with cultural context
 

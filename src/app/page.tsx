@@ -77,10 +77,7 @@ export default function Home() {
                             totalDaysProcessed += data.regions[i].days;
                         }
                         
-                        return {
-                            dayNumber,
-                            region: assignedRegion,
-                            activities: (day.activities || []).map((activity: any, actIndex: number) => ({
+                        const dayActivities = (day.activities || []).map((activity: any, actIndex: number) => ({
                             id: activity.id || `day${day.dayNumber}-activity${actIndex + 1}`,
                             name: activity.title || 'Activity',
                             description: activity.description || 'No description available',
@@ -90,7 +87,19 @@ export default function Home() {
                             icon: activity.icon || '📍',
                             estimatedCost: activity.cost || 0,
                             location: activity.location || 'Japan'
-                            })),
+                        }));
+                        
+                        // Debug logging for activity parsing
+                        console.log(`📅 Day ${dayNumber} Activity Parsing:`, {
+                            aiGeneratedCount: day.activities?.length || 0,
+                            parsedCount: dayActivities.length,
+                            activities: dayActivities.map(a => `${a.startTime}: ${a.name}`)
+                        });
+                        
+                        return {
+                            dayNumber,
+                            region: assignedRegion,
+                            activities: dayActivities,
                             totalCost: (day.activities || []).reduce((sum: number, activity: any) => sum + (activity.cost || 0), 0)
                         };
                     }),
